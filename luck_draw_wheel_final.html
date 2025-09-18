@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <title>熟識的陌生人大獎賽</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+    h1 {
+      margin-top: 30px;
+      color: #333;
+    }
+    canvas {
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 50%;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    table {
+      margin: 30px auto;
+      border-collapse: collapse;
+      width: 300px;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>熟識的陌生人大獎賽</h1>
+  <canvas id="wheel" width="500" height="500"></canvas>
+  <br>
+  <button onclick="spinWheel()">抽獎！</button>
+
+  <table id="winnerTable">
+    <thead>
+      <tr><th>抽獎次數</th><th>得獎者</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const names = ["Sze", "Fiow", "Jon", "Kanas", "Sam", "Mandy", "Fiona", "Ray", "62", "Fai", "Eric", "Elly", "Bella", "Jay"];
+    const colors = ["#FFB6C1", "#FFD700", "#ADFF2F", "#87CEFA", "#FF69B4", "#FFA07A", "#20B2AA", "#9370DB", "#F08080", "#00FA9A", "#FF8C00", "#40E0D0", "#DA70D6", "#7FFFD4"];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.width / 2;
+    let angle = 0;
+    let spinning = false;
+    let winnerCount = 0;
+
+    function drawWheel() {
+      const sliceAngle = 2 * Math.PI / names.length;
+      for (let i = 0; i < names.length; i++) {
+        const startAngle = angle + i * sliceAngle;
+        const endAngle = startAngle + sliceAngle;
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, startAngle, endAngle);
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(startAngle + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#000";
+        ctx.font = "16px Arial";
+        ctx.fillText(names[i], radius - 10, 5);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+      const spins = Math.floor(Math.random() * 3) + 8;
+      const finalAngle = Math.random() * 2 * Math.PI;
+      const totalRotation = spins * 2 * Math.PI + finalAngle;
+      const duration = 5000;
+      const start = performance.now();
+
+      function animate(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        angle = totalRotation * easeOut(progress);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawWheel();
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          const winnerIndex = names.length - Math.floor((angle % (2 * Math.PI)) / (2 * Math.PI / names.length)) - 1;
+          const winner = names[winnerIndex];
+          alert("🎉 恭喜 " + winner + " 中獎！");
+          winnerCount++;
+          const table = document.getElementById("winnerTable").getElementsByTagName("tbody")[0];
+          const row = table.insertRow();
+          row.insertCell(0).innerText = winnerCount;
+          row.insertCell(1).innerText = winner;
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    drawWheel();
+  </script>
+</body>
+</html>
