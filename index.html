@@ -110,7 +110,10 @@ input,select{
 <body>
 
 <header><h1>🎲 桌遊</h1></header>
-<p class="hint">可輸入：遊戲名、類型（Party／策略）、氣氛（大笑／陰謀／親子）、強度（超輕／輕／中）</p>
+<p class="hint">
+  可輸入：遊戲名、類型（Party／策略）、氣氛（大笑／陰謀／親子）、強度（超輕／輕／中）<br>
+  色條：綠＝超輕（唔洗用腦）｜藍＝輕（少少策略）｜橙＝中（要認真玩）
+</p>
 
 <div class="controls">
   <input id="search" placeholder="🔍 搜尋：遊戲名 / 類型 / 氣氛 / 強度">
@@ -215,7 +218,7 @@ const games = [
   {cn:"香料世紀",en:"Century: Spice Road",min:2,max:5,
    category:"引擎建構",duration:35,intensity:"輕",
    mood:"療癒,流暢,輕策略",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=MMw3gagk0MI",
    desc:"用卡升級香料換分，規則順滑又唔太長。"},
   {cn:"妙語說書人",en:"Dixit",min:3,max:6,
    category:"Party／創意",duration:30,intensity:"輕",
@@ -245,12 +248,12 @@ const games = [
   {cn:"毫不留情 UNO",en:"UNO No Mercy",min:2,max:6,
    category:"Party卡牌",duration:30,intensity:"超輕",
    mood:"大笑,仇恨,派對",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=d8y1M-2FXpo",
    desc:"比普通 UNO 更毒瘤，懲罰牌多，仇恨感極高。"},
   {cn:"不謝牌",en:"No Thanks!",min:3,max:7,
    category:"輕策略卡",duration:20,intensity:"輕",
    mood:"輕鬆,心機,小惡意",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=4YxkkLib-y0",
    desc:"用籌放棄唔想要嘅牌，數字加總越低越好。"},
   {cn:"奶酪大盜",en:"Cheese Thief",min:4,max:8,
    category:"狼人系",duration:15,intensity:"超輕",
