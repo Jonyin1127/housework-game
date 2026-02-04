@@ -9,6 +9,9 @@
 :root {
   --bg:#0f0f0f; --card:#1c1c1c; --accent:#ffcc00;
   --text:#f2f2f2; --muted:#999;
+  --easy:#37c978;   /* 超輕 綠 */
+  --light:#3b82f6;  /* 輕 藍 */
+  --medium:#f59e0b; /* 中 橙 */
 }
 *{box-sizing:border-box}
 body{
@@ -52,19 +55,55 @@ input,select{
   grid-template-columns:1fr;
   gap:12px;
 }
+
+/* 卡片＋色條＋摺疊 */
 .game{
-  background:var(--card);
+  display:flex;
   border-radius:16px;
-  padding:14px 16px;
+  background:var(--card);
   box-shadow:0 6px 14px rgba(0,0,0,.45);
+  overflow:hidden;
 }
-.game h3{margin:0 0 4px;font-size:17px}
+.game-strip{
+  width:6px;
+  flex-shrink:0;
+}
+.game-body{
+  flex:1;
+  padding:12px 14px 10px;
+}
+.game-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.game h3{margin:0 0 2px;font-size:17px}
 .game .en{color:var(--muted);font-size:13px}
-.game .players{margin-top:6px;font-size:13px;color:var(--accent)}
+.game .players{margin-top:4px;font-size:13px;color:var(--accent)}
 .game .meta{margin-top:4px;font-size:12px;color:var(--muted)}
 .game .desc{margin-top:6px;font-size:13px;line-height:1.5}
 .game a{color:#4da3ff;text-decoration:none}
 .game a:hover{text-decoration:underline}
+
+/* 摺疊控制 */
+.game-toggle{
+  font-size:18px;
+  color:var(--muted);
+  cursor:pointer;
+  user-select:none;
+}
+.game-details{
+  margin-top:6px;
+  display:none;
+}
+.game.open .game-details{
+  display:block;
+}
+.game.open .game-toggle{
+  transform:rotate(90deg);
+}
 </style>
 </head>
 
@@ -136,7 +175,7 @@ const games = [
   {cn:"犯罪現場：香港",en:"Deception: Murder in Hong Kong",min:4,max:12,
    category:"社交推理",duration:25,intensity:"中",
    mood:"陰謀,推理,講嘢",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=AuBmikjCgjI",
    desc:"法醫用圖板俾線索，調查員同兇手互相猜忌，似主持版狼人。"},
   {cn:"格格不入",en:"Blokus",min:2,max:4,
    category:"抽象策略",duration:25,intensity:"輕",
@@ -161,7 +200,7 @@ const games = [
   {cn:"卡坦島",en:"Catan",min:2,max:4,
    category:"經濟策略",duration:75,intensity:"中",
    mood:"談判,燒腦,互動",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=8Yj0Y3GKE40",
    desc:"採資源、建路建城同交易，偏長、互動多。"},
   {cn:"拼字遊戲",en:"Scrabble",min:2,max:4,
    category:"文字／家庭",duration:50,intensity:"中",
@@ -226,7 +265,7 @@ const games = [
   {cn:"拉斯維加斯",en:"Las Vegas",min:2,max:10,
    category:"骰子／輕策略",duration:30,intensity:"輕",
    mood:"賭博,輕鬆,家庭",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=ZFQgu5EZChY",
    desc:"擲骰霸賭場攞錢，運氣主導但有少少取捨。"},
   {cn:"巧言繪色",en:"Hues and Cues",min:3,max:10,
    category:"Party",duration:30,intensity:"超輕",
@@ -246,7 +285,7 @@ const games = [
   {cn:"閃靈快手",en:"Geistes Blitz",min:2,max:8,
    category:"反應遊戲",duration:20,intensity:"超輕",
    mood:"反應,大笑,親子",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=cpGOy040baI",
    desc:"睇圖即刻搶啱件，考反應同觀察力，小朋友大人都啱。"},
   {cn:"以鵝傳鵝",en:"Gossip Goose",min:5,max:9,
    category:"Party／講故事",duration:20,intensity:"超輕",
@@ -291,7 +330,7 @@ const games = [
   {cn:"機密代號 文字版",en:"Codenames",min:2,max:8,
    category:"字詞／團隊",duration:20,intensity:"輕",
    mood:"燒腦,字詞,派對",
-   youtube:"",
+   youtube:"https://www.youtube.com/watch?v=J8RWBooJivg",
    desc:"隊長用一個字提示多個字卡，避免叫錯敵方同死亡字。"},
   {cn:"機密代號 圖像版",en:"Codenames Pictures",min:2,max:8,
    category:"圖像／團隊",duration:20,intensity:"輕",
@@ -419,6 +458,13 @@ const list = document.getElementById("games");
 const search = document.getElementById("search");
 const players = document.getElementById("players");
 
+function getStripColor(intensity){
+  if(intensity === "超輕") return "var(--easy)";
+  if(intensity === "輕")   return "var(--light)";
+  if(intensity === "中")   return "var(--medium)";
+  return "var(--muted)";
+}
+
 function render() {
   list.innerHTML = "";
   const s = search.value.toLowerCase();
@@ -446,20 +492,40 @@ function render() {
     .forEach(g => {
       const d = document.createElement("div");
       d.className = "game";
+
       const mainMood = (g.mood || "").split(",")[0] || "";
+      const stripColor = getStripColor(g.intensity);
+
       d.innerHTML = `
-        <h3>${g.cn}</h3>
-        <div class="en">${g.en}</div>
-        <div class="meta">
-          ${g.category || "未分類"}${g.intensity ? " ｜ " + g.intensity : ""}${mainMood ? " ｜ " + mainMood : ""}
+        <div class="game-strip" style="background:${stripColor};"></div>
+        <div class="game-body">
+          <div class="game-header">
+            <div>
+              <h3>${g.cn}</h3>
+              <div class="en">${g.en}</div>
+              <div class="meta">
+                ${g.category || "未分類"}
+                ${g.intensity ? " ｜ " + g.intensity : ""}
+                ${mainMood ? " ｜ " + mainMood : ""}
+              </div>
+              <div class="players">
+                👥 ${g.min ?? "?"}–${g.max ?? "?"} 人 ｜ ⏱️ 約 ${g.duration ?? "?"} 分鐘
+              </div>
+            </div>
+            <div class="game-toggle">▶</div>
+          </div>
+          <div class="game-details">
+            ${g.mood ? `<div class="meta">氣氛：#${g.mood.split(",").join(" #")}</div>` : ""}
+            <div class="desc">${g.desc}</div>
+            ${g.youtube ? `<div class="meta"><a href="${g.youtube}" target="_blank">▶ 教學影片</a></div>` : ""}
+          </div>
         </div>
-        <div class="players">
-          👥 ${g.min ?? "?"}–${g.max ?? "?"} 人 ｜ ⏱️ 約 ${g.duration ?? "?"} 分鐘
-        </div>
-        ${g.mood ? `<div class="meta">氣氛：#${g.mood.split(",").join(" #")}</div>` : ""}
-        <div class="desc">${g.desc}</div>
-        ${g.youtube ? `<div class="meta"><a href="${g.youtube}" target="_blank">▶ 教學影片</a></div>` : ""}
       `;
+
+      d.querySelector(".game-header").addEventListener("click", () => {
+        d.classList.toggle("open");
+      });
+
       list.appendChild(d);
     });
 }
