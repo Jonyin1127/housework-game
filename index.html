@@ -1,126 +1,163 @@
-
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8">
-  <title>熟識的陌生人大獎賽</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f0f0f0;
-    }
-    h1 {
-      margin-top: 30px;
-      color: #333;
-    }
-    canvas {
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 50%;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    table {
-      margin: 30px auto;
-      border-collapse: collapse;
-      width: 300px;
-      background: #fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-    }
-    th {
-      background: #eee;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎲 桌遊收藏</title>
+
+<style>
+:root {
+  --bg:#0f0f0f; --card:#1c1c1c; --accent:#ffcc00;
+  --text:#f2f2f2; --muted:#999;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+  "PingFang HK","Noto Sans TC",sans-serif;
+  background:var(--bg);color:var(--text)
+}
+header{
+  padding:16px;text-align:center;background:#000;
+  position:sticky;top:0;z-index:10
+}
+header h1{margin:0;font-size:22px}
+.controls{padding:12px;display:grid;gap:10px}
+input,select{
+  width:100%;padding:12px;border-radius:10px;
+  border:none;background:var(--card);
+  color:var(--text);font-size:16px
+}
+.games{
+  padding:12px;display:grid;
+  grid-template-columns:1fr;gap:12px
+}
+.game{
+  background:var(--card);border-radius:14px;
+  padding:14px;box-shadow:0 4px 10px rgba(0,0,0,.4)
+}
+.game h3{margin:0 0 6px;font-size:18px}
+.game .en{color:var(--muted);font-size:14px}
+.game .players{margin-top:8px;font-size:14px;color:var(--accent)}
+</style>
 </head>
+
 <body>
-  <h1>熟識的陌生人大獎賽</h1>
-  <canvas id="wheel" width="500" height="500"></canvas>
-  <br>
-  <button onclick="spinWheel()">抽獎！</button>
 
-  <table id="winnerTable">
-    <thead>
-      <tr><th>抽獎次數</th><th>得獎者</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<header><h1>🎲 我嘅桌遊收藏</h1></header>
 
-  <script>
-    const names = ["Sze", "Fiow", "Jon", "Kanas", "Sam", "Mandy", "Fiona", "Ray", "62", "Fai", "Eric", "Elly", "Bella", "Jay"];
-    const colors = ["#FFB6C1", "#FFD700", "#ADFF2F", "#87CEFA", "#FF69B4", "#FFA07A", "#20B2AA", "#9370DB", "#F08080", "#00FA9A", "#FF8C00", "#40E0D0", "#DA70D6", "#7FFFD4"];
-    const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
-    const radius = canvas.width / 2;
-    let angle = 0;
-    let spinning = false;
-    let winnerCount = 0;
+<div class="controls">
+  <input id="search" placeholder="🔍 搜尋桌遊（中 / 英文）">
+  <select id="players">
+    <option value="">👥 所有人數</option>
+    <option value="2">2 人</option>
+    <option value="3-4">3–4 人</option>
+    <option value="5-6">5–6 人</option>
+    <option value="7">7 人以上</option>
+  </select>
+</div>
 
-    function drawWheel() {
-      const sliceAngle = 2 * Math.PI / names.length;
-      for (let i = 0; i < names.length; i++) {
-        const startAngle = angle + i * sliceAngle;
-        const endAngle = startAngle + sliceAngle;
-        ctx.beginPath();
-        ctx.moveTo(radius, radius);
-        ctx.arc(radius, radius, radius, startAngle, endAngle);
-        ctx.fillStyle = colors[i];
-        ctx.fill();
-        ctx.save();
-        ctx.translate(radius, radius);
-        ctx.rotate(startAngle + sliceAngle / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#000";
-        ctx.font = "16px Arial";
-        ctx.fillText(names[i], radius - 10, 5);
-        ctx.restore();
-      }
-    }
+<div class="games" id="games"></div>
 
-    function spinWheel() {
-      if (spinning) return;
-      spinning = true;
-      const spins = Math.floor(Math.random() * 3) + 8;
-      const finalAngle = Math.random() * 2 * Math.PI;
-      const totalRotation = spins * 2 * Math.PI + finalAngle;
-      const duration = 5000;
-      const start = performance.now();
+<script>
+const games = [
+ {cn:"飛塔巫師",en:"Wandering Towers",min:1,max:6},
+ {cn:"犯人在跳舞",en:"The Criminal Dances",min:3,max:8},
+ {cn:"炸彈貓",en:"Exploding Kittens",min:2,max:5},
+ {cn:"誰是臥底",en:"Who Is the Spy",min:3,max:10},
+ {cn:"水果猩猩",en:"Durian",min:2,max:7},
+ {cn:"瘋狂九板塊",en:"Nine Tiles Panic",min:2,max:5},
+ {cn:"驚爆倫敦",en:"London Panic",min:4,max:8},
+ {cn:"地產大亨 推推樂",en:"Monopoly Knock Out",min:2,max:8},
+ {cn:"駱駝大賽",en:"Camel Up",min:3,max:8},
+ {cn:"犯罪現場：香港",en:"Deception: Murder in Hong Kong",min:4,max:12},
+ {cn:"格格不入",en:"Blokus",min:2,max:4},
+ {cn:"撲克牌",en:"Playing Cards",min:null,max:null},
+ {cn:"Uni Flip",en:"Uni Flip",min:2,max:10},
+ {cn:"花花世界",en:"Flower World",min:2,max:5},
+ {cn:"卡坦島",en:"Catan",min:2,max:4},
+ {cn:"拼字遊戲",en:"Scrabble",min:2,max:4},
+ {cn:"挖出生天",en:"Dig Your Way Out",min:2,max:6},
+ {cn:"香料世紀",en:"Century: Spice Road",min:2,max:5},
+ {cn:"妙語說書人",en:"Dixit",min:3,max:6},
+ {cn:"地產大亨",en:"Monopoly",min:2,max:6},
+ {cn:"心靈同步",en:"The Mind",min:2,max:4},
+ {cn:"牛頭王",en:"6 nimmt!",min:2,max:7},
+ {cn:"矮人礦坑",en:"Saboteur 1+2",min:2,max:12},
+ {cn:"毫不留情 UNO",en:"UNO No Mercy",min:2,max:6},
+ {cn:"不謝牌",en:"No Thanks!",min:3,max:7},
+ {cn:"奶酪大盜",en:"Cheese Thief",min:4,max:8},
+ {cn:"畫筆傳情",en:"Telestrations",min:4,max:8},
+ {cn:"拉斯維加斯",en:"Las Vegas",min:2,max:10},
+ {cn:"巧言繪色",en:"Hues and Cues",min:3,max:10},
+ {cn:"汽車工程達人",en:"Automobiles",min:3,max:6},
+ {cn:"雞 VS 熱狗",en:"Chicken vs Hotdog",min:2,max:99},
+ {cn:"閃靈快手",en:"Geistes Blitz",min:2,max:8},
+ {cn:"以鵝傳鵝",en:"Gossip Goose",min:5,max:9},
+ {cn:"疊椅",en:"Chair Stack",min:2,max:10},
+ {cn:"麻雀",en:"Mahjong",min:2,max:4},
+ {cn:"哆寶",en:"Dobble",min:2,max:8},
+ {cn:"黑故事集",en:"Black Stories",min:2,max:10},
+ {cn:"神探緝兇",en:"Fugitive",min:2,max:2},
+ {cn:"大頭娃娃",en:"Big Head Doll",min:2,max:6},
+ {cn:"瞎掰王",en:"9 Upper",min:3,max:9},
+ {cn:"機密代號 文字版",en:"Codenames",min:2,max:8},
+ {cn:"機密代號 圖像版",en:"Codenames Pictures",min:2,max:8},
+ {cn:"窒命玩笑",en:"Joking Hazard",min:3,max:10},
+ {cn:"飛蛾族類",en:"Cheating Moth",min:2,max:5},
+ {cn:"害你在心口難開",en:"More Than I Can Say",min:3,max:8},
+ {cn:"妙探尋兇",en:"Cluedo Suspect",min:3,max:4},
+ {cn:"狼人殺",en:"Werewolf",min:10,max:10},
+ {cn:"Monopoly Bid",en:"Monopoly Bid",min:2,max:5},
+ {cn:"顛倒話大師",en:"Don't Say It",min:3,max:12},
+ {cn:"截碼戰",en:"Decrypto",min:3,max:8},
+ {cn:"誰是泥巴豬",en:"Who's the Mud Pig?",min:2,max:4},
+ {cn:"梵高卡牌遊戲",en:"Van Gogh Card Game",min:2,max:4},
+ {cn:"德國心臟病",en:"Halli Galli",min:2,max:6},
+ {cn:"三國殺",en:"Legends of the Three Kingdoms",min:2,max:10},
+ {cn:"風聲",en:"The Message",min:3,max:7},
+ {cn:"Monopoly Deal",en:"Monopoly Deal",min:2,max:5},
+ {cn:"派對遊戲",en:"Party Game",min:2,max:99},
+ {cn:"Guess Who",en:"Guess Who?",min:2,max:2},
+ {cn:"拉密",en:"Rummikub",min:2,max:4},
+ {cn:"德國蟑螂",en:"Kakerlaken Poker",min:2,max:6},
+ {cn:"終極密碼",en:"Da Vinci Code",min:2,max:2},
+ {cn:"飛行棋",en:"Aeroplane Chess",min:4,max:4},
+ {cn:"速比撲",en:"Skip-Bo",min:2,max:6},
+ {cn:"藝術大盜",en:"Art Robbery",min:2,max:5},
+ {cn:"拾棒遊戲",en:"Pick-Up Sticks",min:2,max:10}
+];
 
-      function animate(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        angle = totalRotation * easeOut(progress);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawWheel();
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          spinning = false;
-          const winnerIndex = names.length - Math.floor((angle % (2 * Math.PI)) / (2 * Math.PI / names.length)) - 1;
-          const winner = names[winnerIndex];
-          alert("🎉 恭喜 " + winner + " 中獎！");
-          winnerCount++;
-          const table = document.getElementById("winnerTable").getElementsByTagName("tbody")[0];
-          const row = table.insertRow();
-          row.insertCell(0).innerText = winnerCount;
-          row.insertCell(1).innerText = winner;
-        }
-      }
-      requestAnimationFrame(animate);
-    }
+const list=document.getElementById("games");
+const search=document.getElementById("search");
+const players=document.getElementById("players");
 
-    function easeOut(t) {
-      return 1 - Math.pow(1 - t, 3);
-    }
+function render(){
+ list.innerHTML="";
+ const s=search.value.toLowerCase();
+ const p=players.value;
 
-    drawWheel();
-  </script>
+ games.filter(g=>{
+  const text=(g.cn+g.en).toLowerCase().includes(s);
+  let ok=true;
+  if(p==="2") ok=g.min<=2&&g.max>=2;
+  if(p==="3-4") ok=g.min<=4&&g.max>=3;
+  if(p==="5-6") ok=g.min<=6&&g.max>=5;
+  if(p==="7") ok=g.max>=7;
+  return text&&ok;
+ }).forEach(g=>{
+  const d=document.createElement("div");
+  d.className="game";
+  d.innerHTML=`
+   <h3>${g.cn}</h3>
+   <div class="en">${g.en}</div>
+   <div class="players">👥 ${g.min??"?"}–${g.max??"?"} 人</div>`;
+  list.appendChild(d);
+ });
+}
+search.oninput=render;
+players.onchange=render;
+render();
+</script>
+
 </body>
 </html>
